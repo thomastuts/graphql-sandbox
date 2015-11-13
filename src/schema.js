@@ -19,6 +19,16 @@ const User = new GraphQLObjectType({
   })
 });
 
+const Post = new GraphQLObjectType({
+  name: 'Post',
+  description: 'Represents a post.',
+  fields: () => ({
+    id: {type: new GraphQLNonNull(GraphQLInt)},
+    title: {type: new GraphQLNonNull(GraphQLString)},
+    content: {type: new GraphQLNonNull(GraphQLString)}
+  })
+});
+
 const Query = new GraphQLObjectType({
   name: 'RootQuery',
   fields: () => ({
@@ -28,6 +38,14 @@ const Query = new GraphQLObjectType({
         let fieldASTs = info.fieldASTs;
         let fields = fieldASTs[0].selectionSet.selections.map(selection => selection.name.value);
         return knex.select(fields).from('users');
+      }
+    },
+    posts: {
+      type: new GraphQLList(Post),
+      resolve: (rootValue, args, info) => {
+        let fieldASTs = info.fieldASTs;
+        let fields = fieldASTs[0].selectionSet.selections.map(selection => selection.name.value);
+        return knex.select(fields).from('posts');
       }
     }
   })

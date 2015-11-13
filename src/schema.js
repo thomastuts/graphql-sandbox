@@ -10,12 +10,22 @@ import {
 const connectionInfo = require('../knexfile').development;
 const knex = require('knex')(connectionInfo);
 
+function findSingle(query) {
+  return query.then(function (result) {
+    return result[0];
+  });
+}
+
 const User = new GraphQLObjectType({
   name: 'User',
   description: 'Represents a user.',
   fields: () => ({
     id: {type: new GraphQLNonNull(GraphQLInt)},
-    username: {type: new GraphQLNonNull(GraphQLString)}
+    username: {type: new GraphQLNonNull(GraphQLString)},
+    posts: {
+      type: new GraphQLList(Post),
+      resolve: (user) => knex.select().from('posts').where({author_id: user.id})
+    }
   })
 });
 
@@ -24,6 +34,11 @@ const Post = new GraphQLObjectType({
   description: 'Represents a post.',
   fields: () => ({
     id: {type: new GraphQLNonNull(GraphQLInt)},
+    author_id: {type: new GraphQLNonNull(GraphQLInt)},
+    author: {
+      type: User,
+      resolve: (post) => findSingle(knex.select().from('users').where({id: post.author_id}))
+    },
     title: {type: new GraphQLNonNull(GraphQLString)},
     content: {type: new GraphQLNonNull(GraphQLString)}
   })
@@ -35,17 +50,13 @@ const Query = new GraphQLObjectType({
     users: {
       type: new GraphQLList(User),
       resolve: (rootValue, args, info) => {
-        let fieldASTs = info.fieldASTs;
-        let fields = fieldASTs[0].selectionSet.selections.map(selection => selection.name.value);
-        return knex.select(fields).from('users');
+        return knex.select().from('users');
       }
     },
     posts: {
       type: new GraphQLList(Post),
       resolve: (rootValue, args, info) => {
-        let fieldASTs = info.fieldASTs;
-        let fields = fieldASTs[0].selectionSet.selections.map(selection => selection.name.value);
-        return knex.select(fields).from('posts');
+        return knex.select().from('posts');
       }
     }
   })

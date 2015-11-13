@@ -1,2 +1,3 @@
-require('babel-core');
+require('babel-core/register');
 require('dotenv').load();
+require('./src/server');

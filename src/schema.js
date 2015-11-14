@@ -10,12 +10,6 @@ import {
 const connectionInfo = require('../knexfile').development;
 const knex = require('knex')(connectionInfo);
 
-function findSingle(query) {
-  return query.then(function (result) {
-    return result[0];
-  });
-}
-
 const User = new GraphQLObjectType({
   name: 'User',
   description: 'Represents a user.',
@@ -37,7 +31,7 @@ const Post = new GraphQLObjectType({
     author_id: {type: new GraphQLNonNull(GraphQLInt)},
     author: {
       type: User,
-      resolve: (post) => findSingle(knex.select().from('users').where({id: post.author_id}))
+      resolve: (post) => knex.select().from('users').where({id: post.author_id}).first()
     },
     title: {type: new GraphQLNonNull(GraphQLString)},
     content: {type: new GraphQLNonNull(GraphQLString)}

@@ -9,10 +9,16 @@ console.log('Seeding database...');
 
 async function seedDatabase() {
   try {
+    await postsTags.clean(knex);
+    await posts.clean(knex);
+    await tags.clean(knex);
+    await users.clean(knex);
+
     await users.seed(knex);
     await posts.seed(knex);
     await tags.seed(knex);
     await postsTags.seed(knex);
+
     console.log('Done seeding!');
     process.exit(0);
   }

@@ -8,7 +8,7 @@
     "knex": "./node_modules/knex/src/bin/cli.js",
     "migrate:latest": "npm run knex migrate:latest",
     "migrate:rollback": "npm run knex migrate:rollback",
-    "seed": "node db/seeds/index.js"
+    "seed": "node db/seed.js"
   },
   "repository": {
     "type": "git",

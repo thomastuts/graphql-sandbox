@@ -23,6 +23,15 @@ const User = new GraphQLObjectType({
   })
 });
 
+const Tag = new GraphQLObjectType({
+  name: 'Tag',
+  description: 'Represents a tag for a post.',
+  fields: () => ({
+    id: {type: new GraphQLNonNull(GraphQLInt)},
+    name: {type: new GraphQLNonNull(GraphQLString)}
+  })
+});
+
 const Post = new GraphQLObjectType({
   name: 'Post',
   description: 'Represents a post.',
@@ -32,6 +41,10 @@ const Post = new GraphQLObjectType({
     author: {
       type: User,
       resolve: (post) => knex.select().from('users').where({id: post.author_id}).first()
+    },
+    tags: {
+      type: new GraphQLList(Tag),
+      resolve: (post) => knex.select('name').from('tags').innerJoin('posts_tags', 'id', 'posts_tags.tag_id').where({post_id: post.id})
     },
     title: {type: new GraphQLNonNull(GraphQLString)},
     content: {type: new GraphQLNonNull(GraphQLString)}
@@ -51,6 +64,18 @@ const Query = new GraphQLObjectType({
       type: new GraphQLList(Post),
       resolve: (rootValue, args, info) => {
         return knex.select().from('posts');
+      }
+    },
+    post: {
+      type: Post,
+      args: {
+        id: {
+          description: 'ID of the post.',
+          type: new GraphQLNonNull(GraphQLInt)
+        }
+      },
+      resolve: (rootValue, args, info) => {
+        return knex.select().from('posts').where({id: args.id}).first();
       }
     }
   })
